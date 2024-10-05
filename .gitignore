@@ -1,0 +1,55 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+yarn-debug.log*
+pnpm-debug.log*
+
+# Next.js
+.next/
+out/
+build/
+
+# Static exports
+out/
+
+# Next.js build output
+.next/
+
+# Vercel deployment
+.vercel/
+
+# If using TypeScript
+*.tsbuildinfo
+
+# Ignore production environment variables
+.env
+.env.*
+
+# Prisma
+prisma/migrations/
+prisma/dev.db
+prisma/dev.db-journal
+
+# Ignore SQLite files (if you're using SQLite with Prisma)
+*.db
+*.sqlite
+
+# Ignore compiled files
+dist/
+
+# MacOS system files
+.DS_Store
+
+# Linux system files
+*.swp
