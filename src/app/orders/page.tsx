@@ -1,11 +1,10 @@
 'use client'
-import isGoodStatus from "@/lib/isGoodStatus";
 import { OrderType } from "@/types/types";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import React from "react";
 
 const OrdersPage = () => {  
   const {data:session, status} = useSession()
@@ -15,17 +14,43 @@ const OrdersPage = () => {
   }
 
   const { isPending, error, data } = useQuery({
-    queryKey: ['repoData'],
+    queryKey: ['orders'],
     queryFn: () =>
       fetch('http://localhost:3000/api/orders').then((res) =>
         res.json(),
       ),
   })
+  
+  const queryClient = useQueryClient()
 
+  const mutation = useMutation({
+    mutationFn: ({id, status}: {id: string; status: string}) => {
+      return fetch (`http://localhost:3000/api/orders/${id}`, {
+        method: "PUT",
+        headers:{
+          "Content-Type": "application/json", 
+        },
+        body: JSON.stringify(status),
+      })
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({ queryKey: ["orders"]});
+    }
+  })
+
+  const handleUpdate = (e: React.FormEvent<HTMLFormElement>, id: string) => {
+    e.preventDefault()
+    const form = e.target as HTMLFormElement
+    const input = form.elements[0] as HTMLInputElement
+    const status = input.value
+    console.log(id)
+    mutation.mutate( {id, status} )
+  }
+  
   if (isPending || status==='loading') return 'Loading...'
 
   if (error) return 'An error has occurred: ' + error.message
-  console.log(data)
+
   return (
     <div className="p-4 lg:px-20 xl:px-40">
       <table className="w-full border-separate border-spacing-3">
@@ -50,7 +75,7 @@ const OrdersPage = () => {
               {
                 session?.user.isAdmin?
                   <td className="py-6 px-1">
-                    <form className="flex items-center justify-center gap-4">
+                    <form className="flex items-center justify-center gap-4" onSubmit={(e) => handleUpdate(e, item.id)}>
                       <input type="text" placeholder={item.status} className="p-2 ring-1 ring-red-100 rounded-md"/>
                       <button className="bg-red-500 rounded-full p-2">
                         <Image src="/edit.png" alt="" width={20} height={20}/>
@@ -67,3 +92,6 @@ const OrdersPage = () => {
 };
 
 export default OrdersPage;
+
+
+
