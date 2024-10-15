@@ -9,6 +9,13 @@ const Price = ({ product}: {product: ProductType}) => {
   const [total, setTotal] = useState(product.price);
   const [quantity, setQuantity] = useState(1);
   const [selected, setSelected] = useState(0);
+
+  const {addToCart} = useCartStore()
+
+  useEffect(()=>{
+    useCartStore.persist.rehydrate()
+  },[])
+
   useEffect(() => {
     if (product.options?.length){
       setTotal(
@@ -16,9 +23,7 @@ const Price = ({ product}: {product: ProductType}) => {
       );
     }
   }, [quantity, selected, product.options, product.price]);
-
-  const {addToCart} = useCartStore()
-
+  
   const handleCart = () => {
     addToCart(
       {
