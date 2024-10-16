@@ -35,7 +35,8 @@ const page = () => {
 
     const [file, setFile] = useState<File | null>(null)
     const [options, setOptions] = useState<Option[]>([])
-
+    const [path, setPath] = useState("")
+    console.log(path)
     if (status === "loading") {
         return <p>Loading...</p>
     }
@@ -54,39 +55,38 @@ const page = () => {
         }))
     }
 
-    const handleChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChangeImage = async(e: React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault()
         const file = e.target.files?.[0]
-        if (file) {
-            setFile(file)
-        }
-    }
+        if (!file) return
+        try{
+            const data = new FormData()
+            data.set("file", file)
 
-    const upload = async () => {
-        if (!file) return ''
-        const data = new FormData()
-        data.append("file", file)
-        data.append("upload_preset", "lama-restaurant")
-        try {
-            const response = await fetch("https://api.cloudinary.com/v1_1/dmf4bfivx/image", {
-                method: "POST", 
+            const res = await fetch("api/upload", {
+                method:"POST",
                 body: data
             })
-            const resData = await response.json()
-            return resData.url
-        } catch (error) {
-            console.error("Image upload error:", error)
-            return ''
+
+            if (!res.ok){
+                throw new Error(await res.text())
+            }
+            const resData = await res.json()
+            console.log(resData)
+            setPath(resData.imageUrl)
+
+        } catch(error){
+            console.error(error)
         }
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        const imageUrl = await upload()
+        console.log(path)
         try {
-            const response = await axios.post("/api/products", { ...inputs, options, image: imageUrl })
+            const response = await axios.post("/api/products", { ...inputs, options, image: path })
             const data = response.data
-            // router.push(`/product/${data.id}`)
-            console.log("Product created:", data)
+            router.push(`/product/${data.id}`)
         } catch (err) {
             console.log(err)
         }
@@ -98,7 +98,7 @@ const page = () => {
                 <h1>Add New Product</h1>
                 <div className="w-full flex flex-col gap-2">
                     <label>Image</label>
-                    <input type="file" name='image' className="ring-1 ring-red-200 p-2 rounded-sm" onChange={handleChangeImage} />
+                    <input type="file" name='image' className="ring-1 ring-red-200 p-2 rounded-sm" accept="image/png, image/gif, image/jpeg" onChange={handleChangeImage} />
                 </div>
                 <div className="w-full flex flex-col gap-2">
                     <label>Title</label>
